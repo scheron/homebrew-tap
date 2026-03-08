@@ -13,7 +13,10 @@ cleanup() {
 trap cleanup EXIT
 
 echo "Tapping local repository as ${TAP}"
-brew tap --overwrite "${TAP}" "${REPO_ROOT}"
+if brew tap | grep -qx "${TAP}"; then
+  brew untap "${TAP}"
+fi
+brew tap "${TAP}" "${REPO_ROOT}"
 
 echo "Running brew audit for ${CASK}"
 brew audit --cask --strict "${CASK}"

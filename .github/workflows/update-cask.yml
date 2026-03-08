@@ -1,0 +1,58 @@
+name: Update Daily cask
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g. 0.12.2). Leave empty for latest release."
+        required: false
+        type: string
+  repository_dispatch:
+    types: [update-cask]
+
+permissions:
+  contents: write
+
+jobs:
+  update-cask:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update cask
+        id: update
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION_INPUT="${{ github.event.inputs.version || github.event.client_payload.version || '' }}"
+
+          if [[ -n "${VERSION_INPUT}" ]]; then
+            ./scripts/update-cask.sh "${VERSION_INPUT}"
+          else
+            ./scripts/update-cask.sh
+          fi
+
+          VERSION="$(sed -n 's/^  version "\(.*\)"$/\1/p' Casks/daily.rb | head -n1)"
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+
+          if git diff --quiet -- Casks/daily.rb; then
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "changed=true" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Commit and push
+        if: steps.update.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add Casks/daily.rb
+          git commit -m "cask(daily): update to ${{ steps.update.outputs.version }}"
+          git push

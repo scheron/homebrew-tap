@@ -7,18 +7,19 @@ cask "daily" do
   desc "Simple daily planning and note-taking app"
   homepage "https://github.com/scheron/Daily"
 
-  depends_on arch: :arm64
-
-  app "Daily.app"
-
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", "#{appdir}/Daily.app"],
-                   must_succeed: false
-  end
-
   livecheck do
     url :url
     strategy :github_latest
+  end
+
+  depends_on arch: :arm64
+  depends_on :macos
+
+  app "Daily.app"
+
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args:         ["-dr", "com.apple.quarantine", "{{appdir}}/Daily.app"],
+        must_succeed: false
   end
 end

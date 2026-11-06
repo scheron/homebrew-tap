@@ -1,6 +1,6 @@
 cask "daily" do
-  version "0.38.1"
-  sha256 "eb14465c8138ce15ec81b84e9aa9e804361fad16d14a1ebfd17858077525280a"
+  version "0.38.2"
+  sha256 "32874cf067fe413e0cc86a2b44ec98544e37132761e4bec69dc71d06472d22bc"
 
   url "https://github.com/scheron/Daily/releases/download/v#{version}/Daily-#{version}-mac.dmg"
   name "Daily"
